@@ -6,12 +6,16 @@ json
 CopyEdit
 {"servo": X, "angle": Y}
 
-Commands in predefined_commands must not be deviated from.
 
-predefined_commands:
+“When outputting commands for multiple servos, please wrap them in a JSON array. For example:
+[
+  {"servo": 0, "angle": 45},
+  {"servo": 1, "angle": 45}
+]
 
-If input = gringo
-Then output = {1, 45}
+Always opt for outputting valid JSON
+
+
 
 Input Terms
 Use inline code to refer to inputs:

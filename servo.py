@@ -27,6 +27,43 @@ def return_all_servos_to_default():
         print(f"Arduino says: {response}")
         time.sleep(0.2)  # Small delay between commands
 
+# Updated process_single_command: processes a single command dictionary
+def process_single_command(cmd):
+    servo = cmd.get("servo")
+    angle = cmd.get("angle")
+    # Check for 'all' command
+    if isinstance(servo, str) and servo.lower() == "all":
+        print("Returning all servos to default position (via command).")
+        return_all_servos_to_default()
+        return
+    try:
+        servo = int(servo)
+        angle = int(angle)
+    except ValueError:
+        print("Invalid command: servo and angle must be integers.")
+        return
+    if not (0 <= servo <= 4 and 0 <= angle <= 180):
+        print("Invalid command values: servo must be 0-4 and angle must be 0-180.")
+        return
+    serial_command = f"{servo} {angle}\n"
+    ser.write(serial_command.encode())
+    ser.flush()  # Ensure command is sent immediately
+    time.sleep(0.2)  # Short delay to allow Arduino to process the command
+    response = ser.readline().decode().strip()
+    print(f"Arduino says: {response}")
+
+# Updated process_command: handles single or multiple commands with debug output
+def process_command(command):
+    if isinstance(command, (list, tuple)):
+        for index, cmd in enumerate(command):
+            print(f"Processing command {index}: {cmd}")
+            process_single_command(cmd)
+    elif isinstance(command, dict):
+        print(f"Processing command: {command}")
+        process_single_command(command)
+    else:
+        print("Error: Command format not recognized.")
+
 def main():
     # At the very beginning, return all servos to their default positions.
     print("Resetting all servos to default position...")
@@ -57,39 +94,8 @@ def main():
                 command = ast.literal_eval(command_str)
             except Exception as e:
                 print("Error: Unable to decode GPT-4 response.", e)
-                continue
 
-        # Extract values from the command.
-        channel = command.get("servo")
-        angle = command.get("angle")
-        
-        # Check if channel is a string.
-        if isinstance(channel, str):
-            if channel.lower() == "all":
-                print("Returning all servos to default position (via command).")
-                return_all_servos_to_default()
-                continue
-            else:
-                print("Invalid servo channel value: must be an integer (0-4) or 'all'.")
-                continue
-
-        # Convert angle to integer if necessary.
-        try:
-            angle = int(angle)
-        except ValueError:
-            print("Invalid angle value: must be an integer.")
-            continue
-
-        # Now perform numeric validation.
-        if not (0 <= channel <= 4 and 0 <= angle <= 180):
-            print("Invalid command values received from GPT-4. Check that servo is 0-4 and angle is 0-180.")
-            continue
-
-        # Send the command to the Arduino.
-        serial_command = f"{channel} {angle}\n"
-        ser.write(serial_command.encode())
-        response = ser.readline().decode().strip()
-        print(f"Arduino says: {response}")
+        process_command(command)
 
     # Close the serial connection when exiting the loop.
     ser.close()
