@@ -1,0 +1,9 @@
+openai
+pyserial
+Adafruit-PCA9685
+numpy
+sounddevice
+soundfile
+vosk
+gTTS
+pygame
