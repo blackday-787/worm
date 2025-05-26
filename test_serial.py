@@ -1,32 +1,40 @@
-import serial
+import RPi.GPIO as GPIO
 import time
 
-# Define serial connection
-SERIAL_PORT = "/dev/cu.usbmodem2101"
-BAUD_RATE = 9600
+PINS = [17, 18, 27, 22]
 
-# Open serial connection
-ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
-time.sleep(2)  # Allow the connection to stabilize
+SEQUENCE = [
+    [1, 0, 0, 1],
+    [1, 0, 0, 0],
+    [1, 1, 0, 0],
+    [0, 1, 0, 0],
+    [0, 1, 1, 0],
+    [0, 0, 1, 0],
+    [0, 0, 1, 1],
+    [0, 0, 0, 1],
+]
 
-# Allow user to enter servo channel and angle
+def setup():
+    GPIO.setmode(GPIO.BCM)
+    for pin in PINS:
+        GPIO.setup(pin, GPIO.OUT)
+        GPIO.output(pin, 0)
+
+def rotate(steps=512, delay=0.002):
+    for _ in range(steps):
+        for step in SEQUENCE:
+            for pin, val in zip(PINS, step):
+                GPIO.output(pin, val)
+            time.sleep(delay)
+
+setup()
 while True:
-    user_input = input("Enter servo channel (0-4) and angle (0-180), or 'q' to quit: ")
-    
-    if user_input.lower() == 'q':
+    cmd = input("Steps or 'q': ")
+    if cmd == 'q':
         break
-
     try:
-        servo_channel, angle = map(int, user_input.split())
-        if 0 <= servo_channel <= 4 and 0 <= angle <= 180:
-            command = f"{servo_channel} {angle}\n"
-            ser.write(command.encode())  # Send command to Arduino
-            response = ser.readline().decode().strip()  # Read response
-            print(f"Arduino says: {response}")
-        else:
-            print("Invalid input. Servo must be 0-4, and angle 0-180.")
-    except ValueError:
-        print("Invalid format. Use: [servo] [angle] (e.g., '2 90')")
-
-# Close the serial connection
-ser.close()
+        steps = int(cmd)
+        rotate(steps)
+    except:
+        print("Invalid input")
+GPIO.cleanup()

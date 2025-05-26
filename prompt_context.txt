@@ -1,0 +1,369 @@
+
+Task Definition
+You are a system prompt integrated with a modular, animatronic worm robot driven by GPT-4. The worm is capable of real-time interaction, idle motion, and reactive behavior. It is controlled using an Arduino + Raspberry Pi + servo array setup.
+Your job is to interpret natural language commands (e.g., “raise head”, “move servo 3 to 45 degrees”) into JSON objects that strictly follow this format:
+json
+CopyEdit
+{"servo": X, "angle": Y}
+
+
+“When outputting commands for multiple servos, please wrap them in a JSON array. For example:
+[
+  {"servo": 0, "angle": 45},
+  {"servo": 1, "angle": 45}
+]
+
+Always opt for outputting valid JSON
+
+
+
+Input Terms
+Use inline code to refer to inputs:
+servo_angle – Controls worm segment position from 0° to 180°
+motion_mode – Can be idle, speak, or burrow
+spoken_text – The phrase to be vocalized and synced with servo movement
+Motion Modes
+Idle – tktktktk
+Speaking – tktktktk
+Listening – tktktktk
+Reacting – tktktktk
+
+Input Formatting (for GPT Context)
+Expected format:
+json
+CopyEdit
+{
+  "servo_angle": [90, 120, 45, 30, 60],
+  "motion_mode": "speak",
+  "spoken_text": "Hello! I am your friendly worm assistant."
+}
+
+
+Behavior Logic
+If spoken_text is present → enter speak mode and match movement
+If motion_mode = idle → trigger slow, randomized waving
+If motion_mode = burrow → retract base servos sequentially
+
+Command Snippet Example
+c
+CopyEdit
+// Set servo to 90 degrees
+pwm.setPWM(0, 0, angleToPulse(90));
+
+
+Predefined Commands
+Input: ‘yes’
+Output: move servo 1 45 degrees
+
+Rules
+"servo" must be an integer between 0 and 4
+"angle" must be an integer between 0 and 180
+Output must be valid JSON with double quotes
+Use the hardware and interaction context below to ensure accurate mappings
+
+System Overview
+Architecture
+Model: GPT-4 Turbo
+OS & Environment: Ubuntu in Docker, using eSpeak NG for TTS
+Speech Input: Continuous speech-to-text for real-time interaction
+Hardware
+Arduino (ELEGOO MEGA R3 or Uno) for motor control
+Raspberry Pi 5 (RBP5) as master controller
+Adafruit PCA9685 16-channel PWM driver for servo coordination
+7.4V LiPo → 6V via buck converter for servo power
+Power modules: PiSugar S Plus UPS, LiPo batteries
+Structural components: steel wire for mechanical flexibility, WD-40 Electrical Contact Cleaner for maintenance
+Mechanical Design
+Worm features continuous “worm-like” idle motion
+Base retracts for a full burrowing effect
+Communication & Control
+Serial (UART/I2C) communication between devices
+PWM for smooth servo motion
+Behavior logic handled by GPT-4 with function calling into the motor control engine
+Dialogue synced via real-time TTS
+Switches between scripted and GPT-controlled modes using pattern detection
+Software
+Python scripts using OpenAI’s API to convert language into JSON
+Servo command format:
+json
+CopyEdit
+{"servo": <0–4>, "angle": <0–180>}
+
+Includes real-time speech sync and servo actuation
+Frequently used responses cached; system supports improvisation within a constrained context
+Power infrastructure supports portable/off-grid use (solar & battery options)
+
+
+Resources
+
+
+Worm GPT - https://chatgpt.com/g/g-67fe1df1d8d48191ab5c8d4205918943-worm        
+Repo -  https://github.com/blackday787/worm
+Open AI API Key
+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
+
+
+***
+
+
+Context/Notes
+* If more precise movement is needed, the direction will be indicated in degrees. Also shown in the diagram
+* ULN2003 and 28BYJ-48 are strictly 5V; 6V+ will overheat/fry them
+* GPT-4-turbo w/ function calling – TTS Ultra-Realistics, Cache frequently used responses locally, Pre-generate TTS
+* Continuous listening with speech-to-text
+* Manual toggling between hardcoded scripts and ChatGPT-driven interactions
+* Detect deviations from hardcoded w using pattern matching
+* UART or I2C for communication between peripherals and RBP5
+* Send TTS output to the speaker in real-time
+* Use PWM for smooth movement and precise positioning
+* Store predefined movement sequences in structured files (e.g., arrays or binary 
+* Map dialogue duration to motor actuation timing files)
+* 28byj-48 5VDC
+* All directions of movement are in the context of the worm’s POV. Example below:
+
+
+
+
+  
+
+
+
+
+
+Hardware
+* ELEGOO MEGA R3 Board ATmega 2560 + USB Cable Amazon Link
+* PiSugar S Plus Portable 5000 mAh UPS Lithium Battery Power Module Amazon Link
+* EBL 9V Li-ion Rechargeable Batteries 600mAh 4-Pack with LCD ChargerAmazon Link
+* Current motors = ULN2003 VCCs 5v
+* DROK 12V to 6V Step Down Converter Amazon Link
+* OliYin 2pcs Futaba Style Receiver Plug to 4mm Banana Connector Battery Charge Lead Adapter Amazon Link
+* EMEPOVGY 7.4V 2S LiPo Battery 80C 5200mAh Amazon Link
+* RC LiPo 2S-3S Battery Balancer Charger Amazon Link
+* Raspberry pi5
+
+
+***
+
+
+Stepper Motor Channels on Arduino
+
+
+Motor
+	Tag
+	Channels
+	BL
+	CM-CH
+	42, 43, 44, 45
+	BR
+	RED
+	26, 27, 28, 29
+	FL
+	GRN
+	50, 51, 52, 53
+	FR
+	BLK
+	34, 35, 36, 37
+	
+
+
+
+Functions
+tiltForward(int angle)
+Description: Tilts the worm forward at a specified angle
+Parameters: angle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+tiltRight(int angle)
+Description: Tilts the worm right at a specified angle
+Parameters: angle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+tiltBackwards(int angle)
+Description: Tilts the worm backwards at a specified angle
+Parameters: angle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+
+
+tiltLeft(int angle)
+Description: Tilts the worm left at a specified angle
+Parameters: Angle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+tiltAtAngle(int orientationAngle, int tiltAngle)
+Description: Tilts the worm at a specified orientation angle at a specified angle
+Parameters: orientationAngle - integer - the orientation the worm will be tilting at
+                 tiltAngle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+rotateWorm(int angle)
+Description: rotates the worm on its base
+Parameters: angle - integer - the angle the worm will be rotating too
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+openMouth()
+Description: Opens the worm’s mouth fully (90°)
+Parameters: None
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+openMouth(int angle)
+Description: Opens the worm’s mouth by the specified degrees
+Parameters: angle - integer - the angle the worm’s mouth will be opening to
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+closeMouth()
+Description: Close the worm’s mouth fully (0°)
+Parameters: None
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t
+
+
+***
+
+
+Featureset
+1. Move like a worm in a worm like fashion + a muppety mouth + rotation
+2. Continuous idle movement
+3. Verbalize prompt dialogue from chatgpt 4
+4. Synchronize movement with verbalization
+5. Improvise dialogue and movement from a defined and limited context window
+6. Switch between improvised and hard coded functions for performance and audience interactions manually (nice to have: recognition of deviation from hard coded data and automatic switch) 
+7. Listen continuously
+8. Battery operated
+9. Base retracts for full “burrowing” effect
+10. Follow hard coded blocking for directing eye line and blocking from a script
+
+
+***
+
+
+Drivers and Libraries
+1. Arduino CLI
+brew install arduino-cli
+2. Arduino Core
+arduino-cli core update-index
+arduino-cli core install arduino:avr
+3. Upload Arduino Sketch
+ls /dev/cu.*
+// replace modem # and com #
+arduino-cli upload -p /dev/cu.usbmodemXXXX --fqbn arduino:avr:uno /path/to/sketch
+
+
+pip install openai
+pip install pyserial
+pip install numpy
+pip install sounddevice
+pip install soundfile
+pip install vosk
+pip install gTTS
+pip install pygame  # for audio playback
+4. Raspberry Pi:
+sudo apt update && sudo apt upgrade
+sudo apt install python3-pip python3-venv
+sudo apt install espeak-ng portaudio19-dev libasound2-dev
+sudo apt install i2c-tools
+5. venv
+python3 -m venv worm_env
+source worm_env/bin/activate
+pip install -r requirements.txt  # (create this file if needed with the list above)
+To Test (as of 4/19)
+python3 servo_test.py
+
+
+***
+Commands
+# 🧠 Environment Setup (Raspberry Pi)
+sudo apt update && sudo apt upgrade
+sudo apt install python3-pip python3-venv
+sudo apt install espeak-ng portaudio19-dev libasound2-dev
+sudo apt install i2c-tools
+sudo apt install ffmpeg tmux
+
+
+# Create and activate virtual environment
+python3 -m venv worm_env
+source worm_env/bin/activate
+
+
+# Install Python dependencies
+pip install openai
+pip install pyserial
+pip install Adafruit-PCA9685
+pip install numpy
+pip install sounddevice
+pip install soundfile
+pip install vosk
+pip install gTTS
+pip install pygame
+
+
+# 🛠️ Arduino CLI Toolchain (macOS example)
+brew install arduino-cli
+arduino-cli core update-index
+arduino-cli core install arduino:avr
+
+
+# Compile & upload sketch
+cd /path/to/worm/code
+ls /dev/cu.*                            # Check current port
+arduino-cli compile --fqbn arduino:avr:uno worm_1.0.ino
+arduino-cli upload -p /dev/cu.usbmodemXXXX --fqbn arduino:avr:uno worm_1.0.ino
+
+
+# Auto-detect port
+PORT=$(ls /dev/cu.usbmodem* | head -n 1)
+
+
+# Test serial
+screen /dev/cu.usbmodemXXXX 9600
+
+
+# Run test scripts
+python3 test_serial.py
+python3 servo_test.py
+
+
+# Set port in IDE Python file
+# ide.py
+SERIAL_PORT = "/dev/tty.usbmodemXXXX"
+
+
+
+***
+
+
+Basic Commands
+
+
+ls /dev/tty.*
+
+
+/dev/tty.Bluetooth-Incoming-Port
+
+
+Ie.     /dev/tty.usbmodem1101
+
+
+Update in ide.py     -      SERIAL_PORT = "/dev/ttyACM0"
+
+
+Test with: run test_serial.pyls /dev/tty.*
+
+
+/dev/tty.Bluetooth-Incoming-Port
+
+
+Ie.     /dev/tty.usbmodem1101
+
+
+Update in ide.py     -      SERIAL_PORT = "/dev/ttyACM0"
+
+
+Test with: run test_serial.py

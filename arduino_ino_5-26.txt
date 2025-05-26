@@ -1,0 +1,164 @@
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pwm;
+
+// Servo pulse range
+#define SERVOMIN 150
+#define SERVOMAX 600
+
+// Corrected Channels
+#define BR 0
+#define FR 1
+#define BL 2
+#define FL 3
+#define MID 4  // Mouth
+
+// Angles
+#define SERVO_NEUTRAL       90
+#define MOUTH_FULL_OPEN      0
+#define MOUTH_CLOSED        180
+
+// Function declarations
+void resetAll();
+void tiltFrontLeft();
+void tiltFrontRight();
+void tiltBackLeft();
+void tiltBackRight();
+void openAndCloseMouth();
+void choreographedTalk();
+void holdMouthOpen();
+void closeMouth();
+void testAll();
+void setAngle(uint8_t ch, int deg);
+
+void setup() {
+  Serial.begin(9600);
+  pwm.begin();
+  pwm.setPWMFreq(50);
+  delay(200);
+  randomSeed(analogRead(0));
+  resetAll();
+  Serial.println("Ready: fl fr bl br b t m1 om cm ta");
+}
+
+void loop() {
+  if (!Serial.available()) return;
+
+  String cmd = Serial.readStringUntil('\n');
+  cmd.trim();
+  Serial.print("Command received: ");
+  Serial.println(cmd);
+
+  if      (cmd == "fl") tiltFrontLeft();
+  else if (cmd == "fr") tiltFrontRight();
+  else if (cmd == "bl") tiltBackLeft();
+  else if (cmd == "br") tiltBackRight();
+  else if (cmd == "b" ) resetAll();
+  else if (cmd == "t" ) choreographedTalk();
+  else if (cmd == "m1") openAndCloseMouth();
+  else if (cmd == "om") holdMouthOpen();
+  else if (cmd == "cm") closeMouth();
+  else if (cmd == "ta") testAll();
+  else if (cmd == "d") dance();
+  else Serial.println("Unknown cmd");
+}
+
+void resetAll() {
+  setAngle(FL, SERVO_NEUTRAL);
+  setAngle(FR, SERVO_NEUTRAL);
+  setAngle(BL, SERVO_NEUTRAL);
+  setAngle(BR, SERVO_NEUTRAL);
+  setAngle(MID, MOUTH_CLOSED);
+  Serial.println("All→neutral (body→90°, mouth→180°)");
+}
+
+void dance() {
+  Serial.println("dance (fr ↔ bl)");
+
+  tiltFrontRight(); delay(1000);
+  tiltBackLeft();   delay(1000);
+  tiltFrontRight(); delay(1000);
+  tiltBackLeft();   delay(1000);
+  tiltFrontRight(); delay(1000);
+
+  resetAll();       delay(300);
+}
+
+void tiltFrontLeft() {
+  Serial.println("tiltFrontLeft");
+  setAngle(FL, 180);  // pull
+  setAngle(BR, 0);    // release
+}
+
+void tiltFrontRight() {
+  Serial.println("tiltFrontRight");
+  setAngle(FR, 180);  // pull
+  setAngle(BL, 0);    // release
+}
+
+void tiltBackLeft() {
+  Serial.println("tiltBackLeft");
+  setAngle(BL, 180);  // pull
+  setAngle(FR, 0);    // release
+}
+
+void tiltBackRight() {
+  Serial.println("tiltBackRight");
+  setAngle(BR, 180);  // pull
+  setAngle(FL, 0);    // release
+}
+
+void openAndCloseMouth() {
+  Serial.println("openAndCloseMouth");
+  setAngle(MID, MOUTH_FULL_OPEN);
+  delay(600);
+  setAngle(MID, MOUTH_CLOSED);
+}
+
+void choreographedTalk() {
+  Serial.println("choreographedTalk (timed for full movement)");
+
+  setAngle(MID, MOUTH_FULL_OPEN); delay(200);
+  setAngle(MID, MOUTH_CLOSED);    delay(150);
+
+  setAngle(MID, 90);              delay(150); // halfway
+  setAngle(MID, MOUTH_CLOSED);    delay(150);
+
+  setAngle(MID, 90);              delay(150); // halfway again
+  setAngle(MID, MOUTH_CLOSED);    delay(150);
+
+  setAngle(MID, 135);             delay(120); // quarter open
+  setAngle(MID, MOUTH_CLOSED);    delay(150);
+
+  setAngle(MID, MOUTH_FULL_OPEN); delay(220);
+  setAngle(MID, MOUTH_CLOSED);    delay(150);
+}
+
+void holdMouthOpen() {
+  Serial.println("holdMouthOpen");
+  setAngle(MID, MOUTH_FULL_OPEN);
+}
+
+void closeMouth() {
+  Serial.println("closeMouth");
+  setAngle(MID, MOUTH_CLOSED);
+}
+
+// 🧪 TA = Test All sequence
+void testAll() {
+  Serial.println("Running testAll sequence...");
+  tiltFrontRight(); delay(800); resetAll(); delay(800);
+  tiltFrontLeft();  delay(800); resetAll(); delay(800);
+  tiltBackRight();  delay(800); resetAll(); delay(800);
+  tiltBackLeft();   delay(800); resetAll(); delay(800);
+  holdMouthOpen();  delay(800); closeMouth(); delay(500);
+  choreographedTalk();
+  Serial.println("testAll complete.");
+}
+
+void setAngle(uint8_t ch, int deg) {
+  deg = constrain(deg, 0, 180);
+  int pulse = map(deg, 0, 180, SERVOMIN, SERVOMAX);
+  pwm.setPWM(ch, 0, pulse);
+}

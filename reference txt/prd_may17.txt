@@ -1,0 +1,301 @@
+﻿To Do
+1. Switch to O3 mini and test
+2. Install eSpeak NG
+3. Set up Ubuntu with Docker
+4. Get WD-40 Electrical Contact Cleaner
+5. Create Google App Script to update .txt context file
+6. Use tmux or screen for long-running processes (TTS/GPT separation)
+7. Install:
+   1. sudo apt install espeak-ng
+   2. sudo apt install ffmpeg
+***
+Milestones
+1. Function call motor through GPT-4-turbo
+2. High-level behavior (GPT-4-turbo) → motor control and microcontroller → dithering/oscillation engine → prosody TTS intonation and rhythm → choreography/motion blending engine
+3. Sight and character modeling / prompting
+4. Run full system on Raspberry Pi 5
+5. Add tracking sensors
+6. Implement burrowing behavior
+​​***
+Resources
+
+
+Worm GPT - https://chatgpt.com/g/g-67fe1df1d8d48191ab5c8d4205918943-worm        
+Repo -  https://github.com/blackday787/worm
+Open AI API Key
+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
+
+
+***
+
+
+Context/Notes
+* If more precise movement is needed, the direction will be indicated in degrees. Also shown in the diagram
+* ULN2003 and 28BYJ-48 are strictly 5V; 6V+ will overheat/fry them
+* GPT-4-turbo w/ function calling – TTS Ultra-Realistics, Cache frequently used responses locally, Pre-generate TTS
+* Continuous listening with speech-to-text
+* Manual toggling between hardcoded scripts and ChatGPT-driven interactions
+* Detect deviations from hardcoded w using pattern matching
+* UART or I2C for communication between peripherals and RBP5
+* Send TTS output to the speaker in real-time
+* Use PWM for smooth movement and precise positioning
+* Store predefined movement sequences in structured files (e.g., arrays or binary 
+* Map dialogue duration to motor actuation timing files)
+* 28byj-48 5VDC
+* All directions of movement are in the context of the worm’s POV. Example below:
+
+
+
+
+  
+
+
+
+
+
+General Hardware
+* PiSugar S Plus Portable 5000 mAh UPS Lithium Battery Power Module
+* DROK 12V to 6V Step Down Converter 
+* OliYin 2pcs Futaba Style Receiver Plug to 4mm Banana Connector Battery Charge Lead Adapte
+* EMEPOVGY 7.4V 2S LiPo Battery 80C 5200mAh
+* RC LiPo 2S-3S Battery Balancer Charger
+* Raspberry pi5
+
+
+Exclusive Servo Hardware
+* Arduino uno
+* MG996R Servos
+* PCA9685 16-Channel Servo Driver
+
+
+Exclusive Stepper Hardware
+* ELEGOO MEGA R3 Board ATmega 2560 + USB Cable 
+* Motors x4 - ULN2003 VCCs 5v
+
+
+***
+
+
+Stepper Motor Channels on Arduino
+
+
+Motor
+	Tag
+	Channels
+	BL
+	CM-CH
+	42, 43, 44, 45
+	BR
+	RED
+	26, 27, 28, 29
+	FL
+	GRN
+	50, 51, 52, 53
+	FR
+	BLK
+	34, 35, 36, 37
+	
+
+
+
+Functions
+tiltForward(int angle)
+Description: Tilts the worm forward at a specified angle
+Parameters: angle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+tiltRight(int angle)
+Description: Tilts the worm right at a specified angle
+Parameters: angle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+tiltBackwards(int angle)
+Description: Tilts the worm backwards at a specified angle
+Parameters: angle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+
+
+tiltLeft(int angle)
+Description: Tilts the worm left at a specified angle
+Parameters: Angle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+tiltAtAngle(int orientationAngle, int tiltAngle)
+Description: Tilts the worm at a specified orientation angle at a specified angle
+Parameters: orientationAngle - integer - the orientation the worm will be tilting at
+                 tiltAngle - integer - the angle the worm is tilting at
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+rotateWorm(int angle)
+Description: rotates the worm on its base
+Parameters: angle - integer - the angle the worm will be rotating too
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+openMouth()
+Description: Opens the worm’s mouth fully (90°)
+Parameters: None
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+openMouth(int angle)
+Description: Opens the worm’s mouth by the specified degrees
+Parameters: angle - integer - the angle the worm’s mouth will be opening to
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t.
+
+
+closeMouth()
+Description: Close the worm’s mouth fully (0°)
+Parameters: None
+Returns: Returns a boolean value of true if the function succeeded, or false if it didn’t
+
+
+***
+
+
+Featureset
+1. Move like a worm in a worm like fashion + a muppety mouth + rotation
+2. Continuous idle movement
+3. Verbalize prompt dialogue from chatgpt 4
+4. Synchronize movement with verbalization
+5. Improvise dialogue and movement from a defined and limited context window
+6. Switch between improvised and hard coded functions for performance and audience interactions manually (nice to have: recognition of deviation from hard coded data and automatic switch) 
+7. Listen continuously
+8. Battery operated
+9. Base retracts for full “burrowing” effect
+10. Follow hard coded blocking for directing eye line and blocking from a script
+
+
+***
+
+
+Drivers and Libraries
+1. Arduino CLI
+brew install arduino-cli
+adafruit
+2. Arduino Core
+arduino-cli core update-index
+arduino-cli core install arduino:avr
+3. Upload Arduino Sketch
+ls /dev/cu.*
+// replace modem # and com #
+arduino-cli upload -p /dev/cu.usbmodemXXXX --fqbn arduino:avr:uno /path/to/sketch
+
+
+pip install openai
+pip install pyserial
+pip install numpy
+pip install sounddevice
+pip install soundfile
+pip install vosk
+pip install gTTS
+pip install pygame  # for audio playback
+4. Raspberry Pi:
+sudo apt update && sudo apt upgrade
+sudo apt install python3-pip python3-venv
+sudo apt install espeak-ng portaudio19-dev libasound2-dev
+sudo apt install i2c-tools
+5. venv
+python3 -m venv worm_env
+source worm_env/bin/activate
+pip install -r requirements.txt  # (create this file if needed with the list above)
+To Test (as of 4/19)
+python3 servo_test.py
+
+
+***
+Commands
+# 🧠 Environment Setup (Raspberry Pi)
+sudo apt update && sudo apt upgrade
+sudo apt install python3-pip python3-venv
+sudo apt install espeak-ng portaudio19-dev libasound2-dev
+sudo apt install i2c-tools
+sudo apt install ffmpeg tmux
+
+
+# Create and activate virtual environment
+python3 -m venv worm_env
+source worm_env/bin/activate
+
+
+# Install Python dependencies
+pip install openai
+pip install pyserial
+pip install Adafruit-PCA9685
+pip install numpy
+pip install sounddevice
+pip install soundfile
+pip install vosk
+pip install gTTS
+pip install pygame
+
+
+# 🛠️ Arduino CLI Toolchain (macOS example)
+brew install arduino-cli
+arduino-cli core update-index
+arduino-cli core install arduino:avr
+
+
+# Compile & upload sketch
+cd /path/to/worm/code
+ls /dev/cu.*                            # Check current port
+arduino-cli compile --fqbn arduino:avr:uno worm_1.0.ino
+arduino-cli upload -p /dev/cu.usbmodemXXXX --fqbn arduino:avr:uno worm_1.0.ino
+
+
+# Auto-detect port
+PORT=$(ls /dev/cu.usbmodem* | head -n 1)
+
+
+# Test serial
+screen /dev/cu.usbmodemXXXX 9600
+
+
+# Run test scripts
+python3 test_serial.py
+python3 servo_test.py
+
+
+# Set port in IDE Python file
+# ide.py
+SERIAL_PORT = "/dev/tty.usbmodemXXXX"
+
+
+
+***
+
+
+Basic Commands
+
+
+ls /dev/tty.*
+
+
+/dev/tty.Bluetooth-Incoming-Port
+
+
+Ie.     /dev/tty.usbmodem1101
+
+
+Update in ide.py     -      SERIAL_PORT = "/dev/ttyACM0"
+
+
+Test with: run test_serial.pyls /dev/tty.*
+
+
+/dev/tty.Bluetooth-Incoming-Port
+
+
+Ie.     /dev/tty.usbmodem1101
+
+
+Update in ide.py     -      SERIAL_PORT = "/dev/ttyACM0"
+
+
+Test with: run test_serial.py

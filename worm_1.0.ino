@@ -1,88 +1,32 @@
-#include <Wire.h>
-#include <Adafruit_PWMServoDriver.h>
+#include <Stepper.h>
 
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+#define STEPS_PER_REV 2048
+#define STEP_3_5_HALF_REV 614  // ~108° = 3/5 of a half rotation
 
-// Function prototypes
-void moveServo(int servoChannel, int angle);
-void stop_servos();
+// Red stepper on pins 8, 9, 10, 11 (ULN2003 input order)
+Stepper redStepper(STEPS_PER_REV, 8, 10, 9, 11);
 
-#define SERVO_MIN 150  // Pulse for 0° position
-#define SERVO_MAX 600  // Pulse for 180° position
-#define SERVO_90 ((SERVO_MIN + SERVO_MAX) / 2)  // Pulse for 90° position
+// Green stepper on pins 50, 51, 52, 53 (ULN2003 input order)
+Stepper greenStepper(STEPS_PER_REV, 50, 52, 51, 53);
 
 void setup() {
-  pwm.begin();
-  pwm.setPWMFreq(60); // Set frequency to 60 Hz (typical for servos)
-  delay(10);
-
-  // Initialize all 5 servos to default (0°) position
-  for (uint8_t channel = 0; channel < 5; channel++) {
-    pwm.setPWM(channel, 0, SERVO_MIN);
-  }
+  redStepper.setSpeed(10);     // RPM
+  greenStepper.setSpeed(10);   // RPM
 
   Serial.begin(9600);
-  delay(100);  // Wait for Serial to stabilize
-  
-  // Flush any leftover characters from the serial buffer
-  while (Serial.available() > 0) {
-    Serial.read();
-  }
-  
-  Serial.println("Arduino Ready!");
-}
-
-void moveServo(int servoChannel, int angle) {
-  if (servoChannel < 0 || servoChannel > 4) {
-    Serial.println("Invalid Servo Channel");
-    return;
-  }
-  if (angle < 0 || angle > 180) {
-    Serial.println("Invalid Angle");
-    return;
-  }
-
-  int pulseLength = map(angle, 0, 180, SERVO_MIN, SERVO_MAX);
-  pwm.setPWM(servoChannel, 0, pulseLength);
-
-  Serial.print("Servo ");
-  Serial.print(servoChannel);
-  Serial.print(" moved to ");
-  Serial.print(angle);
-  Serial.println(" degrees");
-}
-
-void stop_servos() {
-  for (uint8_t channel = 0; channel < 5; channel++) {
-    pwm.setPWM(channel, 0, 0);  // Stop the servo (set to neutral pulse, no movement)
-    delay(0);  // Brief delay per servo
-  }
-  Serial.println("All servos stopped.");
+  Serial.println("Red CW / Green CCW startup...");
 }
 
 void loop() {
-  if (Serial.available()) {
-    String input = Serial.readStringUntil('\n');  // Read incoming serial data until newline
-    input.trim();
-    
-    // Debug: Print the raw command received
-    Serial.print("Received command: ");
-    Serial.println(input);
+  Serial.println("→ Red CW / ← Green CCW");
+  redStepper.step(STEP_3_5_HALF_REV);      // Red: clockwise
+  greenStepper.step(-STEP_3_5_HALF_REV);   // Green: counter-clockwise
 
-    int servoChannel, angle;
-    if (sscanf(input.c_str(), "%d %d", &servoChannel, &angle) == 2) {
-      moveServo(servoChannel, angle);
-    } else if (input == "stop") {
-      stop_servos();
-    } else {
-      Serial.println("Invalid command format. Use: [servo] [angle] or 'stop'");
-    }
-    
-    delay(50); // Short delay after processing a command
+  delay(1000);
 
-    // Flush the serial input buffer after processing
-    while (Serial.available() > 0) {
-      Serial.read();
-    }
-  }
+  Serial.println("← Red CCW / → Green CW");
+  redStepper.step(-STEP_3_5_HALF_REV);     // Red: counter-clockwise
+  greenStepper.step(STEP_3_5_HALF_REV);    // Green: clockwise
+
+  delay(2000);
 }
