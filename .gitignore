@@ -1,0 +1,39 @@
+# 🔒 Security - Never commit these files
+*.env
+.env
+openai_key.txt
+
+# 🐍 Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+
+# 🤖 Arduino
+*.hex
+*.elf
+
+# 🖥️ System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 🎤 Audio files (cache)
+cache/
+*.wav
+*.mp3
+
+# 📊 Logs
+*.log
+
+# 🧠 AI models (too large for git)
+model/
+vosk-model*/ 
