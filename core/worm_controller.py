@@ -22,8 +22,9 @@ class WormController:
         port = os.getenv("WORM_SERIAL_PORT")
         baud = int(os.getenv("WORM_BAUD_RATE", "115200"))
         
-        # Common Arduino ports for macOS/Linux
+        # Common Arduino ports for macOS/Linux (updated with detected port)
         common_ports = [
+            "/dev/cu.usbmodem11301",  # Your detected Arduino port
             "/dev/cu.usbmodem1401",
             "/dev/cu.usbmodem1301", 
             "/dev/cu.usbmodem101",
@@ -66,8 +67,15 @@ class WormController:
             # Read Arduino response if available
             time.sleep(0.1)
             if self.arduino.in_waiting:
-                response = self.arduino.readline().decode().strip()
-                print(f"🤖 Arduino: {response}")
+                try:
+                    response = self.arduino.readline().decode('utf-8', errors='ignore').strip()
+                    if response:
+                        print(f"🤖 Arduino: {response}")
+                except UnicodeDecodeError:
+                    # Handle any encoding issues gracefully
+                    response = self.arduino.readline().decode('ascii', errors='ignore').strip()
+                    if response:
+                        print(f"🤖 Arduino: {response}")
                 
             return True
         except Exception as e:

@@ -1,9 +1,16 @@
-openai
-pyserial
-Adafruit-PCA9685
-numpy
-sounddevice
-soundfile
-vosk
-gTTS
-pygame
+# Core dependencies
+pyserial==3.5
+openai==1.3.0
+
+# Audio processing
+sounddevice==0.4.6
+soundfile==0.12.1
+vosk==0.3.45
+gTTS==2.4.0
+pygame==2.5.2
+
+# Optional AI enhancements
+numpy==1.24.3
+
+# Arduino servo control (if using PCA9685 board)
+adafruit-circuitpython-pca9685==3.4.16
