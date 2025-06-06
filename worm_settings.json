@@ -1,0 +1,20 @@
+{
+  "audio": {
+    "volume": 0.8,
+    "speech_speed": 150,
+    "voice_timeout": 5.0
+  },
+  "movement": {
+    "default_delay": 0.5,
+    "animation_speed": 1.0
+  },
+  "ai": {
+    "use_ai_fallback": true,
+    "ai_confidence_threshold": 0.6,
+    "max_response_length": 200
+  },
+  "debug": {
+    "verbose_logging": false,
+    "simulation_mode": false
+  }
+}

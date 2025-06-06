@@ -1,6 +1,7 @@
 """
-🐛 WORM SYSTEM - REFACTORED ARCHITECTURE
-Main orchestrator that coordinates between AI, hardware, and configuration
+WORM SYSTEM - REFACTORED ARCHITECTURE (AI-FREE)
+Main orchestrator that coordinates between hardware, audio, and configuration
+Text-to-speech and predefined responses remain fully functional
 """
 
 import time
@@ -8,25 +9,24 @@ import threading
 from typing import Optional, Dict
 import signal
 import sys
+import argparse
 
 # Import our separated modules
 from core.worm_controller import WormController
 from core.audio_controller import AudioController
-from ai.ai_processor import AIProcessor, AIResponse, ResponseType
 from config_manager import ConfigManager, PredefinedResponse
 
 class WormSystem:
-    """Main worm system orchestrator - coordinates all subsystems"""
+    """Main worm system orchestrator - coordinates all subsystems (AI-free)"""
     
     def __init__(self):
-        print("🐛 WORM SYSTEM STARTING...")
+        print("WORM SYSTEM STARTING... (AI-FREE MODE)")
         print("=" * 50)
         
-        # Initialize all subsystems
+        # Initialize all subsystems (no AI)
         self.config = ConfigManager()
         self.hardware = WormController()
         self.audio = AudioController()
-        self.ai = AIProcessor()
         
         # System state
         self.running = False
@@ -37,32 +37,30 @@ class WormSystem:
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
         
-        print("🚀 WORM SYSTEM READY!")
+        print("WORM SYSTEM READY! (Text-to-Speech & Predefined Responses)")
         self._print_system_status()
     
     def _print_system_status(self):
         """Print the status of all subsystems"""
-        print("\n📊 SYSTEM STATUS:")
-        print(f"🤖 Hardware: {'✅ Connected' if self.hardware.is_connected() else '🤖 Simulation'}")
-        print(f"🎤 Audio: ✅ Ready")
-        print(f"🧠 AI: {'✅ Ready' if self.ai.is_available() else '❌ Disabled'}")
-        print(f"⚙️  Config: ✅ {self.config.get_response_count()} responses loaded")
+        print("\nSYSTEM STATUS:")
+        print(f"Hardware: {'Connected' if self.hardware.is_connected() else 'Simulation'}")
+        print(f"Audio: Ready (TTS Functional)")
+        print(f"AI: Removed (Predefined responses only)")
+        print(f"Config: {self.config.get_response_count()} responses loaded")
+        print("Use response editor to add new responses!")
         print()
     
     def start(self, voice_mode: bool = True):
         """Start the main WORM system"""
         self.running = True
         
-        # Welcome message
-        self._respond("Hello! I'm WORM, your friendly robot companion! 🐛")
-        
         if voice_mode:
-            print("🎤 Starting voice interaction mode...")
-            print("💡 Say 'worm' to get my attention, or 'quit' to exit")
+            print("Starting voice interaction mode...")
+            print("Say 'worm' to get my attention, or 'quit' to exit")
             self._start_voice_mode()
         else:
-            print("💬 Starting text interaction mode...")
-            print("💡 Type your messages or 'quit' to exit")
+            print("Starting text interaction mode...")
+            print("Type your messages or 'quit' to exit")
             self._start_text_mode()
     
     def _start_voice_mode(self):
@@ -110,14 +108,27 @@ class WormSystem:
             else:
                 self._respond("Yes? How can I help you?")
         elif text_lower in ['quit', 'exit', 'stop']:
-            print("👋 Goodbye!")
+            print("Goodbye!")
             self.stop()
     
     def _process_input(self, user_input: str) -> Optional[Dict]:
-        """Process user input and generate response"""
-        print(f"\n👤 User: {user_input}")
+        """Process user input and generate response (AI-free)"""
+        print(f"\nUser: {user_input}")
         
-        # Try to find a predefined response first
+        # Check for direct Arduino commands first
+        arduino_commands = ["d", "s", "fl", "fr", "bl", "br", "sl", "sr", "w", "b", "om", "cm", "identify"]
+        user_lower = user_input.lower().strip()
+        
+        if user_lower in arduino_commands:
+            print(f"Executing Arduino command: {user_lower}")
+            success = self.hardware.send_command(user_lower)
+            return {
+                "type": "direct_command",
+                "command": user_lower,
+                "success": success
+            }
+        
+        # Try to find a predefined response
         predefined_response = self.config.find_response(user_input)
         
         if predefined_response and predefined_response.text:
@@ -125,7 +136,7 @@ class WormSystem:
             response_text = predefined_response.text
             movement = predefined_response.movement
             
-            print(f"📖 Using predefined response")
+            print(f"Using predefined response")
             self._respond(response_text, movement)
             
             return {
@@ -134,30 +145,8 @@ class WormSystem:
                 "movement": movement
             }
         
-        elif self.ai.is_available():
-            # Use AI to generate response
-            ai_response = self.ai.generate_response(user_input)
-            
-            if ai_response and ai_response.text:
-                # Determine movement from AI suggestions
-                movement = None
-                if ai_response.movement_hint:
-                    movement = self._map_ai_movement_to_command(ai_response.movement_hint)
-                elif ai_response.emotion:
-                    movement = self.ai.suggest_emotion_movement(ai_response.emotion)
-                
-                print(f"🧠 Using AI response (confidence: {ai_response.confidence:.2f})")
-                self._respond(ai_response.text, movement)
-                
-                return {
-                    "type": "ai_generated",
-                    "text": ai_response.text,
-                    "movement": movement,
-                    "confidence": ai_response.confidence
-                }
-        
-        # Fallback response
-        fallback_response = self.config.find_response("", "fallbacks")
+        # Enhanced fallback with better response matching
+        fallback_response = self._find_enhanced_fallback(user_input)
         if fallback_response:
             self._respond(fallback_response.text, fallback_response.movement)
             return {
@@ -167,28 +156,43 @@ class WormSystem:
             }
         
         # Last resort
-        self._respond("I'm not sure how to respond to that, but I'm always learning!")
-        return {"type": "error", "text": "No response generated"}
+        default_text = "I'm not sure how to respond to that, but I'm always learning! Try asking about dancing, moving, or saying hello!"
+        self._respond(default_text)
+        return {"type": "error", "text": default_text}
+    
+    def _find_enhanced_fallback(self, user_input: str) -> Optional[PredefinedResponse]:
+        """Find a better fallback response based on keywords"""
+        user_lower = user_input.lower()
+        
+        # Simple keyword matching for fallbacks (no movement mapping)
+        if any(word in user_lower for word in ['dance', 'move', 'wiggle', 'motion']):
+            return self.config.find_response("dance", "commands")
+        elif any(word in user_lower for word in ['hello', 'hi', 'hey', 'greetings']):
+            return self.config.find_response("hello", "greetings")
+        elif any(word in user_lower for word in ['what', 'who', 'how', 'why']):
+            return self.config.find_response("what are you", "questions")
+        elif any(word in user_lower for word in ['happy', 'good', 'great', 'awesome']):
+            return self.config.find_response("", "emotions")
+        else:
+            # Use standard fallback
+            return self.config.find_response("", "fallbacks")
     
     def _respond(self, text: str, movement: str = None):
         """Generate a complete response with speech and movement"""
-        print(f"🐛 WORM: {text}")
+        print(f"WORM: {text}")
         
         # Coordinate movement and speech
         if movement:
             self._perform_movement_with_speech(text, movement)
         else:
-            # Just speak with default talking animation
-            self._perform_movement_with_speech(text, "talk_animation")
+            # Just speak without movement
+            self.audio.speak(text, blocking=False)
     
     def _perform_movement_with_speech(self, text: str, movement: str):
         """Coordinate movement and speech timing"""
-        # Start movement
-        if hasattr(self.hardware, movement):
-            getattr(self.hardware, movement)()
-        else:
-            # Default to talking animation
-            self.hardware.talk_animation()
+        # Send movement command directly to Arduino
+        if movement:
+            self.hardware.send_command(movement)
         
         # Speak the text (non-blocking)
         self.audio.speak(text, blocking=False)
@@ -196,34 +200,10 @@ class WormSystem:
         # Update last movement time
         self.last_movement_time = time.time()
     
-    def _map_ai_movement_to_command(self, ai_movement: str) -> str:
-        """Map AI movement suggestions to hardware commands"""
-        movement_mapping = {
-            "dance": "dance_animation",
-            "wiggle": "talk_animation",
-            "move": "choreographed_talk",
-            "happy": "dance_animation",
-            "sad": "sadness_movement",
-            "excited": "dance_animation",
-            "talk": "talk_animation",
-            "forward": "move_forward_left",
-            "back": "move_back_left"
-        }
-        
-        for key, command in movement_mapping.items():
-            if key in ai_movement.lower():
-                return command
-        
-        return "talk_animation"  # Default
-    
     def manual_command(self, command: str) -> bool:
-        """Execute a manual hardware command"""
-        if hasattr(self.hardware, command):
-            print(f"🤖 Executing: {command}")
-            return getattr(self.hardware, command)()
-        else:
-            print(f"❌ Unknown command: {command}")
-            return False
+        """Execute a manual hardware command (direct Arduino shortcuts)"""
+        print(f"Executing: {command}")
+        return self.hardware.send_command(command)
     
     def add_response(self, category: str, subcategory: str, text: str, movement: str = None):
         """Add a new predefined response"""
@@ -242,27 +222,29 @@ class WormSystem:
             },
             "audio": {
                 "is_speaking": self.audio.is_speaking,
-                "voice_recognition": self.audio.vosk_model is not None
+                "voice_recognition": self.audio.vosk_model is not None,
+                "tts_functional": True
             },
             "ai": {
-                "available": self.ai.is_available(),
-                "conversation_length": len(self.ai.conversation_history)
+                "available": False,
+                "status": "removed"
             },
             "config": self.config.get_stats(),
             "system": {
                 "running": self.running,
-                "listening": self.listening
+                "listening": self.listening,
+                "mode": "ai_free"
             }
         }
     
     def _signal_handler(self, signum, frame):
         """Handle system signals for graceful shutdown"""
-        print(f"\n🛑 Received signal {signum}, shutting down...")
+        print(f"\nReceived signal {signum}, shutting down...")
         self.stop()
     
     def stop(self):
         """Stop the WORM system gracefully"""
-        print("\n🛑 SHUTTING DOWN WORM SYSTEM...")
+        print("\nSHUTTING DOWN WORM SYSTEM...")
         
         self.running = False
         self.listening = False
@@ -277,27 +259,40 @@ class WormSystem:
         # Close all subsystems
         self.hardware.close()
         self.audio.close()
-        self.ai.close()
         
-        print("👋 WORM system stopped. Goodbye!")
+        print("WORM system stopped. Goodbye!")
 
 def main():
     """Main entry point"""
+    parser = argparse.ArgumentParser(description="WORM Robot System (AI-Free)")
+    parser.add_argument('--voice', action='store_true', help='Start in voice mode')
+    parser.add_argument('--text', action='store_true', help='Start in text mode')
+    
+    args = parser.parse_args()
+    
     try:
         worm = WormSystem()
         
-        # Choose interaction mode
-        mode = input("Choose mode - (v)oice or (t)ext [v]: ").lower()
-        voice_mode = mode != 't'
+        # Determine interaction mode
+        if args.voice:
+            voice_mode = True
+            print("Starting in voice mode (from command line)")
+        elif args.text:
+            voice_mode = False
+            print("Starting in text mode (from command line)")
+        else:
+            # Interactive mode selection
+            mode = input("Choose mode - (v)oice or (t)ext [v]: ").lower()
+            voice_mode = mode != 't'
         
         worm.start(voice_mode=voice_mode)
         
     except Exception as e:
-        print(f"❌ System error: {e}")
+        print(f"System error: {e}")
         import traceback
         traceback.print_exc()
     finally:
-        print("🔚 Program ended")
+        print("Program ended")
 
 if __name__ == "__main__":
     main() 

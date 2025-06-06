@@ -9,10 +9,10 @@ import time
 import sys
 
 def test_arduino_connection():
-    """Test basic Arduino communication"""
+    """Test Arduino connection with current settings"""
     
-    # Try the detected port
-    port = "/dev/cu.usbmodem11301"
+    # Updated port from available ports
+    port = "/dev/cu.usbmodem1101"
     baud = 115200
     
     print("🔍 Testing Arduino connection...")

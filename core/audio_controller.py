@@ -32,10 +32,11 @@ class AudioController:
         try:
             # Initialize pygame for audio playback
             pygame.mixer.init()
-            print("✅ Audio playback ready")
+            print("Audio playback ready")
         except Exception as e:
             print(f"⚠️  Audio setup failed: {e}")
     
+        
     def speak(self, text: str, speed: int = 150, blocking: bool = True):
         """Convert text to speech and play it"""
         if self.is_speaking and blocking:
@@ -44,7 +45,7 @@ class AudioController:
         def _speak():
             self.is_speaking = True
             try:
-                # Create TTS
+                # Create TTS with female voice
                 tts = gTTS(text=text, lang='en', slow=(speed < 100))
                 
                 # Save to temporary file

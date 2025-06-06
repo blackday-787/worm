@@ -1,192 +1,82 @@
-# 🤖 WORM Robot - Modular Architecture
+# 🐛 Worm Robot Control System
 
-A conversational AI robot with separated AI and hardware layers for independent development and testing.
+A robotic worm control system with Arduino integration, AI-powered natural language processing, and **fully conversational** male voice feedback with synchronized mouth movement.
 
-## 🏗️ Architecture Overview
+## Quick Start
 
-### Core Components
-- `core/` - Pure hardware control (no AI dependencies)
-- `ai/` - Pure AI processing (no hardware dependencies)  
-- `config_manager.py` - Response JSON and settings management
-- `worm_system_refactored.py` - Main orchestrator
-
-### Legacy Backup
-- `legacy/` - All original files safely preserved
-
-## 🚀 Quick Start
-
-### 1. Install Python Dependencies
+**Run the worm system:**
 ```bash
-pip install -r requirements.txt
+./start_worm.sh
 ```
 
-### 2. 🤖 Arduino Setup
+This command will automatically:
+- ✅ Set up virtual environment
+- ✅ Install all dependencies  
+- ✅ Upload Arduino sketch
+- ✅ Configure AI features
+- ✅ Launch the control system
 
-**Upload the Arduino Sketch:**
-```bash
-# Check Arduino connection
-ls /dev/cu.*
+## ✨ Features
 
-# Upload the proper sketch
-arduino-cli upload -p /dev/cu.usbmodem1401 --fqbn arduino:avr:uno worm_controller.ino
+- **🗣️ Fully Conversational**: Every command gets a voice response with mouth movement
+- **🤖 AI Natural Language Processing**: Say things like "move forward", "dance", "open mouth"
+- **👨 Deep Male Voice**: Responds with a conversational male voice
+- **🎭 Realistic Mouth Movement**: 't' command triggers complex mouth animations during speech
+- **🎤 Voice Control**: Switch between text and voice input modes
+- **📱 Arduino Integration**: Real-time servo control
+- **🔄 Automatic Setup**: One command does everything
+
+## Usage
+
+### Conversational Experience
+**The worm talks back to EVERYTHING you say!** 
+
+Type or say:
+- `"move forward"` → Worm says "Moving forward" + moves + mouth animates
+- `"dance"` → Worm says "Let's dance" + dances + mouth animates
+- `"open mouth"` → Worm says "Opening mouth" + opens mouth + mouth animates
+- `"fl"` → Worm says "Moving front left" + moves + mouth animates
+
+### Special Commands
+- `"hello there worm"` → Worm says "Hello there Tate!" with special choreographed mouth movement
+- `"nice to meet you"` → Worm says "Nice to meet you too!" and does a little dance
+
+### System Commands
+- `voice` - Switch to voice input mode (worm says "Voice mode activated")
+- `text` - Switch to text input mode (worm says "Text mode activated")
+- `help` - Show all commands
+- `quit` - Exit system (worm says "Goodbye!")
+
+### Mode Switching
+- **📱 In TEXT mode**: Type `voice` to switch to voice input
+- **🎤 In VOICE mode**: Say `text` to switch back to text input
+
+### Direct Arduino Commands (still work)
+- `fl`, `fr`, `bl`, `br` - Directional tilts
+- `b` - Reset to neutral position
+- `om`, `cm` - Open/close mouth
+- `t` - Talk sequence (complex mouth movement)
+- `d` - Dance routine
+
+## Hardware Requirements
+
+- Arduino Uno/Nano (or compatible)
+- Adafruit PCA9685 PWM Servo Driver
+- 5x Servo Motors (standard size)
+- USB cable for Arduino connection
+
+### Servo Connections
+```
+PCA9685 Channel → Function
+0 → Front Left (FL)
+1 → Front Right (FR)
+2 → Back Left (BL)  
+3 → Front Right (BR)
+4 → Mouth (MO)
 ```
 
-**Hardware Requirements:**
-- Arduino Uno/Mega
-- PCA9685 servo driver board  
-- 5 servos (FL, FR, BL, BR, MID for mouth)
-- Proper wiring as per servo channels
+## AI Features
 
-**Arduino Libraries Needed:**
-```cpp
-#include <Wire.h>
-#include <Adafruit_PWMServoDriver.h>
-```
+✅ **Already Configured!** Your OpenAI API key is set up and working.
 
-### 3. Set Environment Variables
-```bash
-export OPENAI_API_KEY="your_key_here"
-export WORM_SERIAL_PORT="/dev/cu.usbmodem1401"  # Update as needed
-```
-
-### 4. Run the System
-```bash
-# Full orchestrated system
-python3 worm_system_refactored.py
-
-# Test individual components
-python3 demo_modular_architecture.py
-```
-
-## 🔧 Arduino Communication
-
-**Python → Arduino Communication:**
-- Python sends simple string commands via serial
-- Arduino listens on `Serial.readStringUntil('\n')`
-- Baud rate: 115200
-
-**Available Commands:**
-- `fl` - Tilt front left
-- `fr` - Tilt front right  
-- `bl` - Tilt back left
-- `br` - Tilt back right
-- `b` - Reset to neutral
-- `t` - Choreographed talk animation
-- `d` - Dance animation
-- `om` - Open mouth
-- `cm` - Close mouth
-- `sadness` - Sadness movement
-- `ta` - Test all movements
-
-**Arduino Response:**
-- Confirms each command received
-- Provides status updates
-- Reports completion of animations
-
-## 🧪 Testing Components
-
-### Hardware Only (No AI)
-```python
-from core.worm_controller import WormController
-
-worm = WormController()
-worm.dance_animation()    # Test without AI
-worm.talk_animation()     # Works independently
-```
-
-### AI Only (No Hardware)  
-```python
-from ai.ai_processor import AIProcessor
-
-ai = AIProcessor()
-response = ai.process("Tell me a joke")  # No hardware needed
-print(response)
-```
-
-### Audio Only
-```python
-from core.audio_controller import AudioController
-
-audio = AudioController()
-audio.speak("Hello world")      # TTS test
-text = audio.listen()           # Speech recognition test
-```
-
-## 🔍 Troubleshooting
-
-### Arduino Connection Issues
-```bash
-# Check available ports
-ls /dev/cu.*
-
-# Test serial connection
-screen /dev/cu.usbmodem1401 115200
-
-# In the Arduino Serial Monitor, type: ta
-# Should see: "🧪 Testing all movements..."
-```
-
-### Python Serial Issues
-```python
-# Test basic serial communication
-python3 -c "
-from core.worm_controller import WormController
-worm = WormController()
-worm.send_command('ta')  # Should trigger test sequence
-"
-```
-
-### Missing Libraries
-```bash
-# Arduino libraries
-# Install through Arduino IDE Library Manager:
-# - Adafruit PWM Servo Driver Library
-# - Wire (built-in)
-
-# Python libraries
-pip install -r requirements.txt
-```
-
-## 📝 Development
-
-### Adding New Movements
-1. **Arduino side:** Add function in `worm_controller.ino`
-2. **Python side:** Add method in `core/worm_controller.py`
-3. **AI side:** Update prompts in `ai/ai_processor.py`
-
-### Adding New AI Features
-- Modify `ai/ai_processor.py` only
-- Hardware layer remains untouched
-- Test AI features without physical robot
-
-### Hardware Development
-- Modify `core/` components only  
-- AI layer remains untouched
-- Test hardware without AI processing
-
-## 🔄 System Flow
-
-```
-User Input → AI Processor → Movement Commands → Arduino → Physical Movement
-                ↓                    ↓              ↓
-            Generates Intent    Translates to     Controls
-            & Response          Serial Commands   Servos
-```
-
-## 📊 Project Stats
-
-- **Modular Components:** 6 independent packages
-- **Legacy Files Preserved:** 36 files in organized backup
-- **Zero Dependencies** between AI and hardware layers
-- **Independent Testing** for each component
-
-## 🎯 Next Steps
-
-1. **Test your Arduino connection**
-2. **Upload `worm_controller.ino`**  
-3. **Run the demo script**
-4. **Start developing new features!**
-
----
-
-*Happy modular worming! 🐛🤖* 
+The system uses GPT-4 to understand natural language and translate it to worm commands. Voice responses use a male voice for feedback. 

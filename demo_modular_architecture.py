@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-🎯 WORM MODULAR ARCHITECTURE DEMO
+🎯 WORM MODULAR ARCHITECTURE DEMO (AI-FREE)
 Demonstrates how to use each component independently and together
+Now includes the new Response Editor for managing responses
 """
 
 import time
@@ -9,7 +10,7 @@ import sys
 
 def demo_hardware_only():
     """Demo: Pure hardware control without AI"""
-    print("\n🤖 DEMO 1: Hardware Control Only (No AI)")
+    print("\n🤖 DEMO 1: Hardware Control Only")
     print("=" * 50)
     
     try:
@@ -20,16 +21,15 @@ def demo_hardware_only():
         
         print("🎭 Testing movements...")
         movements = [
-            ("dance_animation", "Dancing! 💃"),
-            ("talk_animation", "Talking animation"),
-            ("choreographed_talk", "Choreographed talking"),
-            ("sadness_movement", "Showing sadness 😢"),
-            ("reset_position", "Resetting to neutral")
+            ("d", "Dancing! 💃"),
+            ("t", "Talking animation"),
+            ("s", "Showing sadness 😢"),
+            ("b", "Resetting to neutral")
         ]
         
         for movement, description in movements:
             print(f"  🎯 {description}")
-            getattr(worm, movement)()
+            worm.send_command(movement)
             time.sleep(1.5)
         
         worm.close()
@@ -38,58 +38,10 @@ def demo_hardware_only():
     except Exception as e:
         print(f"❌ Hardware demo error: {e}")
 
-def demo_ai_only():
-    """Demo: Pure AI processing without hardware"""
-    print("\n🧠 DEMO 2: AI Processing Only (No Hardware)")
-    print("=" * 50)
-    
-    try:
-        from ai import AIProcessor
-        
-        print("🧠 Initializing AI processor...")
-        ai = AIProcessor()
-        
-        if not ai.is_available():
-            print("⚠️  AI not available - need OpenAI API key")
-            return
-        
-        print("💬 Testing AI responses...")
-        test_inputs = [
-            "Hello, who are you?",
-            "Can you dance for me?",
-            "I'm feeling sad today",
-            "Tell me a joke",
-            "What can you do?"
-        ]
-        
-        for user_input in test_inputs:
-            print(f"\n👤 User: {user_input}")
-            
-            # Analyze input
-            analysis = ai.analyze_input(user_input)
-            print(f"🔍 Analysis: {analysis.get('intent', 'unknown')} (confidence: {analysis.get('confidence', 0):.2f})")
-            
-            # Generate response
-            response = ai.generate_response(user_input)
-            print(f"🤖 WORM: {response.text}")
-            
-            if response.emotion:
-                print(f"😊 Emotion detected: {response.emotion}")
-            if response.movement_hint:
-                print(f"💃 Movement suggested: {response.movement_hint}")
-            
-            time.sleep(1)
-        
-        ai.close()
-        print("\n✅ AI demo complete!")
-        
-    except Exception as e:
-        print(f"❌ AI demo error: {e}")
-
 def demo_config_only():
-    """Demo: Configuration management without AI or hardware"""
-    print("\n⚙️ DEMO 3: Configuration Management Only")
-    print("=" * 50)
+    """Demo: Configuration management with predefined responses"""
+    print("\n⚙️ DEMO 2: Configuration Management (Predefined Responses)")
+    print("=" * 60)
     
     try:
         from config_manager import ConfigManager
@@ -102,7 +54,7 @@ def demo_config_only():
         print("\n🔍 Testing response lookup...")
         test_queries = [
             "hello",
-            "dance",
+            "dance", 
             "what are you",
             "I'm happy",
             "random query that won't match"
@@ -143,8 +95,8 @@ def demo_config_only():
         print(f"❌ Configuration demo error: {e}")
 
 def demo_audio_only():
-    """Demo: Audio functionality without AI or hardware"""
-    print("\n🎤 DEMO 4: Audio Control Only")
+    """Demo: Audio functionality with TTS"""
+    print("\n🎤 DEMO 3: Audio Control (Text-to-Speech)")
     print("=" * 50)
     
     try:
@@ -155,9 +107,10 @@ def demo_audio_only():
         
         print("🗣️ Testing text-to-speech...")
         test_phrases = [
-            "Hello! I'm testing the audio system.",
-            "This is a modular architecture demo.",
-            "Each component works independently!"
+            "Hello! I'm testing the text-to-speech system.",
+            "This is the AI-free WORM architecture.",
+            "Text-to-speech works perfectly without AI!",
+            "I can speak any text you give me!"
         ]
         
         for phrase in test_phrases:
@@ -177,86 +130,171 @@ def demo_audio_only():
     except Exception as e:
         print(f"❌ Audio demo error: {e}")
 
+def demo_response_editor():
+    """Demo: Response Editor functionality"""
+    print("\n📝 DEMO 4: Response Editor")
+    print("=" * 30)
+    
+    try:
+        print("🚀 The Response Editor allows you to:")
+        print("  📖 Browse existing responses")
+        print("  ➕ Add new responses")
+        print("  🎤 Test text-to-speech")
+        print("  👀 Preview responses with TTS")
+        print("  📥📤 Import/export responses")
+        print("  📊 View statistics")
+        
+        print("\n💡 To launch the Response Editor:")
+        print("   python response_editor.py")
+        
+        print("\n🎯 Quick test - loading config...")
+        from config_manager import ConfigManager
+        config = ConfigManager()
+        print(f"✅ {config.get_response_count()} responses available for editing")
+        
+        print("✅ Response Editor demo complete!")
+        
+    except Exception as e:
+        print(f"❌ Response Editor demo error: {e}")
+
 def demo_full_integration():
-    """Demo: Full system integration"""
-    print("\n🌟 DEMO 5: Full System Integration")
-    print("=" * 50)
+    """Demo: Full system integration (AI-free)"""
+    print("\n🌟 DEMO 5: Full System Integration (AI-Free)")
+    print("=" * 55)
     
     try:
         from worm_system_refactored import WormSystem
         
-        print("🚀 Initializing full WORM system...")
+        print("🚀 Initializing AI-free WORM system...")
         worm = WormSystem()
         
         # Show system status
         stats = worm.get_system_stats()
         print("\n📊 System Status:")
         print(f"  🤖 Hardware: {'✅ Connected' if stats['hardware']['connected'] else '🤖 Simulation'}")
-        print(f"  🧠 AI: {'✅ Available' if stats['ai']['available'] else '❌ Disabled'}")
+        print(f"  🎤 Audio/TTS: {'✅ Ready' if stats['audio']['tts_functional'] else '❌ Error'}")
+        print(f"  🧠 AI: {stats['ai']['status']} ({'✅' if stats['ai']['available'] else '❌'})")
         print(f"  ⚙️  Responses: {stats['config']['total_responses']} loaded")
+        print(f"  🏃 Mode: {stats['system']['mode']}")
         
-        print("\n💬 Testing integrated responses...")
+        print("\n💬 Testing integrated responses (predefined only)...")
         test_inputs = [
             "hello worm",
-            "can you dance",
-            "tell me about yourself"
+            "dance for me",
+            "what are you",
+            "I'm feeling happy",
+            "something completely random"
         ]
         
+        print("\n🎯 Processing test inputs:")
         for user_input in test_inputs:
-            print(f"\n👤 Input: {user_input}")
+            print(f"\n👤 Input: '{user_input}'")
             result = worm._process_input(user_input)
-            print(f"📝 Response type: {result.get('type', 'unknown')}")
-            time.sleep(2)
+            print(f"📊 Result: {result['type']} response")
+            time.sleep(1)
         
         worm.stop()
         print("\n✅ Full integration demo complete!")
         
     except Exception as e:
-        print(f"❌ Integration demo error: {e}")
+        print(f"❌ Full integration demo error: {e}")
 
-def main():
-    """Run all demos"""
-    print("🎯 WORM MODULAR ARCHITECTURE DEMONSTRATION")
-    print("🎯" * 25)
-    print("\nThis demo shows how each component works independently")
-    print("and how they integrate together in the full system.\n")
-    
-    demos = [
-        ("Hardware Only", demo_hardware_only),
-        ("AI Only", demo_ai_only), 
-        ("Configuration Only", demo_config_only),
-        ("Audio Only", demo_audio_only),
-        ("Full Integration", demo_full_integration)
-    ]
+def demo_tts_focused():
+    """Demo: Focused TTS testing with predefined responses"""
+    print("\n🎤 DEMO 6: Text-to-Speech Focus Test")
+    print("=" * 45)
     
     try:
-        for i, (name, demo_func) in enumerate(demos, 1):
-            print(f"\n{'='*60}")
-            print(f"🎯 RUNNING DEMO {i}/5: {name}")
-            print(f"{'='*60}")
-            
-            demo_func()
-            
-            if i < len(demos):
-                input(f"\n⏸️  Press Enter to continue to next demo...")
+        from config_manager import ConfigManager
+        from core.audio_controller import AudioController
         
-        print(f"\n{'='*60}")
-        print("🎉 ALL DEMOS COMPLETED!")
-        print("🎉" * 20)
-        print("\n🎯 Key Benefits Demonstrated:")
-        print("  ✅ Each component works independently")
-        print("  ✅ Clean separation of concerns")
-        print("  ✅ Easy testing and development")
-        print("  ✅ Graceful fallbacks when components unavailable")
-        print("  ✅ Modular architecture enables easy swapping")
-        print("\n🐛 Happy modular worming! 🤖")
+        print("🔊 Initializing TTS components...")
+        config = ConfigManager()
+        audio = AudioController()
         
-    except KeyboardInterrupt:
-        print("\n\n🛑 Demo interrupted by user")
+        print("🗣️ Testing TTS with various response types...")
+        
+        # Test different categories
+        test_categories = [
+            ("hello", "greetings"),
+            ("dance", "commands"),
+            ("what are you", "questions"),
+            ("I'm happy", "emotions")
+        ]
+        
+        for query, expected_category in test_categories:
+            print(f"\n🔎 Query: '{query}' (expecting {expected_category})")
+            response = config.find_response(query)
+            
+            if response:
+                print(f"📖 Found: {response.text}")
+                print(f"🎭 Movement: {response.movement or 'none'}")
+                print("🗣️ Playing with TTS...")
+                audio.speak(response.text, blocking=True)
+                print("✅ TTS complete!")
+            else:
+                print("❌ No response found")
+            
+            time.sleep(0.5)
+        
+        audio.close()
+        print("\n✅ TTS focus test complete!")
+        
     except Exception as e:
-        print(f"\n❌ Demo error: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"❌ TTS focus test error: {e}")
+
+def main():
+    """Main demo runner"""
+    print("🎯 WORM MODULAR ARCHITECTURE DEMOS (AI-FREE)")
+    print("=" * 60)
+    print("🎤 Text-to-Speech and predefined responses are fully functional!")
+    print("🚫 AI generation has been removed - use Response Editor to add responses")
+    print()
+    
+    demos = [
+        ("1", "Hardware Control Only", demo_hardware_only),
+        ("2", "Configuration & Predefined Responses", demo_config_only),
+        ("3", "Audio Control & TTS", demo_audio_only),
+        ("4", "Response Editor", demo_response_editor),
+        ("5", "Full System Integration", demo_full_integration),
+        ("6", "TTS Focus Test", demo_tts_focused),
+        ("A", "Run All Demos", None),
+        ("Q", "Quit", None)
+    ]
+    
+    while True:
+        print("\n📋 AVAILABLE DEMOS:")
+        for code, name, _ in demos:
+            icon = "🚀" if code == "A" else "🚪" if code == "Q" else "🎯"
+            print(f"  {code}. {icon} {name}")
+        
+        choice = input("\nSelect demo (1-6, A, Q): ").strip().upper()
+        
+        if choice == 'Q':
+            print("👋 Goodbye!")
+            break
+        elif choice == 'A':
+            print("\n🚀 RUNNING ALL DEMOS...")
+            for code, name, demo_func in demos:
+                if demo_func:  # Skip A and Q entries
+                    print(f"\n{'='*60}")
+                    print(f"🎯 RUNNING: {name}")
+                    print(f"{'='*60}")
+                    demo_func()
+                    input("\nPress Enter to continue to next demo...")
+            print("\n🎉 All demos completed!")
+        else:
+            # Find and run specific demo
+            demo_found = False
+            for code, name, demo_func in demos:
+                if code == choice and demo_func:
+                    print(f"\n🎯 RUNNING: {name}")
+                    demo_func()
+                    demo_found = True
+                    break
+            
+            if not demo_found:
+                print("❌ Invalid choice. Please try again.")
 
 if __name__ == "__main__":
     main() 

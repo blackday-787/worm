@@ -1,5 +1,5 @@
 """
-⚙️ WORM CONFIGURATION MANAGER
+WORM CONFIGURATION MANAGER
 Handles response JSON, settings, and configuration
 No AI or hardware dependencies
 """
@@ -33,7 +33,7 @@ class ConfigManager:
         """Load predefined responses from JSON file"""
         try:
             if not os.path.exists(self.responses_file):
-                print(f"⚠️  Responses file {self.responses_file} not found")
+                print(f"Responses file {self.responses_file} not found")
                 self.responses = self._create_default_responses()
                 self.save_responses()
                 return True
@@ -41,11 +41,11 @@ class ConfigManager:
             with open(self.responses_file, 'r', encoding='utf-8') as f:
                 self.responses = json.load(f)
             
-            print(f"✅ Loaded {len(self.responses)} response categories")
+            print(f"Loaded {len(self.responses)} response categories")
             return True
             
         except Exception as e:
-            print(f"❌ Error loading responses: {e}")
+            print(f"Error loading responses: {e}")
             self.responses = self._create_default_responses()
             return False
     
@@ -54,103 +54,42 @@ class ConfigManager:
         try:
             with open(self.responses_file, 'w', encoding='utf-8') as f:
                 json.dump(self.responses, f, indent=2, ensure_ascii=False)
-            print(f"✅ Responses saved to {self.responses_file}")
+            print(f"Responses saved to {self.responses_file}")
             return True
         except Exception as e:
-            print(f"❌ Error saving responses: {e}")
+            print(f"Error saving responses: {e}")
             return False
     
     def _create_default_responses(self) -> Dict:
         """Create default response structure"""
         return {
-            "greetings": {
-                "casual": [
-                    {"text": "Hey there! I'm WORM, your friendly robotic companion!", "movement": "dance_animation"},
-                    {"text": "Hello! Ready to wiggle and learn together?", "movement": "talk_animation"},
-                    {"text": "Hi! What brings you to visit a curious robot worm today?", "movement": "choreographed_talk"}
-                ],
-                "formal": [
-                    {"text": "Good day! I am WORM, an interactive robotic assistant.", "movement": "talk_animation"},
-                    {"text": "Greetings! How may I assist you today?", "movement": "talk_animation"}
-                ]
-            },
-            "questions": {
-                "about_worm": [
-                    {"text": "I'm a robot worm built with Arduino! I can move, talk, and learn.", "movement": "dance_animation"},
-                    {"text": "I'm WORM - a curious little robot who loves to chat and wiggle around!", "movement": "talk_animation"},
-                    {"text": "I'm an Arduino-powered worm robot with servo motors for movement and AI for conversation!", "movement": "choreographed_talk"}
-                ],
-                "capabilities": [
-                    {"text": "I can move in different directions, dance, talk, and have conversations with you!", "movement": "dance_animation"},
-                    {"text": "I love to wiggle, chat, and learn new things! Want to see me dance?", "movement": "talk_animation"}
-                ]
-            },
-            "commands": {
-                "movement": [
-                    {"text": "Watch me move!", "movement": "dance_animation"},
-                    {"text": "Here I go!", "movement": "choreographed_talk"},
-                    {"text": "Time to wiggle!", "movement": "talk_animation"}
-                ],
-                "dance": [
-                    {"text": "Let's dance together! 🕺", "movement": "dance_animation"},
-                    {"text": "Dancing is one of my favorite things to do!", "movement": "dance_animation"}
-                ]
-            },
-            "emotions": {
-                "happy": [
-                    {"text": "I'm so happy! This makes my circuits sparkle!", "movement": "dance_animation"},
-                    {"text": "Yay! That's wonderful news!", "movement": "dance_animation"}
-                ],
-                "sad": [
-                    {"text": "Oh no, that makes me feel blue... 😢", "movement": "sadness_movement"},
-                    {"text": "I'm sorry to hear that. Is there anything I can do to help?", "movement": "sadness_movement"}
-                ],
-                "excited": [
-                    {"text": "Oh wow! That's so exciting! I can hardly contain my servos!", "movement": "dance_animation"},
-                    {"text": "Amazing! Tell me more!", "movement": "dance_animation"}
-                ]
-            },
             "fallbacks": [
-                {"text": "That's interesting! Can you tell me more about that?", "movement": "talk_animation"},
-                {"text": "Hmm, I'm not sure I understand. Could you explain that differently?", "movement": "talk_animation"},
-                {"text": "That's a new one for me! I'm always learning new things.", "movement": "choreographed_talk"},
-                {"text": "My circuits are processing that... interesting!", "movement": "talk_animation"}
+                {"text": "I'm not sure how to respond to that, but I'm always learning!", "movement": None}
             ]
         }
     
     def find_response(self, query: str, category: str = None) -> Optional[PredefinedResponse]:
         """Find a matching predefined response"""
-        query_lower = query.lower()
+        query_lower = query.lower().strip()
         
-        # Define search categories in priority order
-        search_categories = []
+        # For custom responses, try to find exact trigger matches
+        if 'custom' in self.responses:
+            for subcategory, response_list in self.responses['custom'].items():
+                if isinstance(response_list, list):
+                    for response in response_list:
+                        if 'trigger' in response and response['trigger'].lower().strip() == query_lower:
+                            return PredefinedResponse(
+                                text=response.get('text', ''),
+                                movement=response.get('movement')
+                            )
         
-        if category:
-            search_categories = [category]
-        else:
-            # Determine category based on keywords
-            if any(word in query_lower for word in ['hello', 'hi', 'hey', 'greetings']):
-                search_categories = ['greetings']
-            elif any(word in query_lower for word in ['dance', 'move', 'wiggle']):
-                search_categories = ['commands']
-            elif any(word in query_lower for word in ['what are you', 'who are you', 'about you']):
-                search_categories = ['questions']
-            elif any(word in query_lower for word in ['happy', 'great', 'awesome', 'wonderful']):
-                search_categories = ['emotions']
-            else:
-                search_categories = ['fallbacks']
-        
-        # Search in specified categories
-        for cat in search_categories:
-            if cat in self.responses:
-                response_data = self._search_in_category(query_lower, self.responses[cat])
-                if response_data:
-                    return PredefinedResponse(**response_data)
-        
-        # Fallback to random fallback response
+        # No matches found - use fallback
         if 'fallbacks' in self.responses and self.responses['fallbacks']:
             fallback = random.choice(self.responses['fallbacks'])
-            return PredefinedResponse(**fallback)
+            return PredefinedResponse(
+                text=fallback.get('text', ''),
+                movement=fallback.get('movement')
+            )
         
         return None
     
@@ -185,11 +124,11 @@ class ConfigManager:
             
             self.responses[category][subcategory].append(new_response)
             self.save_responses()
-            print(f"✅ Added response to {category}/{subcategory}")
+            print(f"Added response to {category}/{subcategory}")
             return True
             
         except Exception as e:
-            print(f"❌ Error adding response: {e}")
+            print(f"Error adding response: {e}")
             return False
     
     def remove_response(self, category: str, subcategory: str, index: int) -> bool:
@@ -201,14 +140,14 @@ class ConfigManager:
                 
                 removed = self.responses[category][subcategory].pop(index)
                 self.save_responses()
-                print(f"✅ Removed response: {removed['text'][:50]}...")
+                print(f"Removed response: {removed['text'][:50]}...")
                 return True
             else:
-                print(f"❌ Response not found at {category}/{subcategory}[{index}]")
+                print(f"Response not found at {category}/{subcategory}[{index}]")
                 return False
                 
         except Exception as e:
-            print(f"❌ Error removing response: {e}")
+            print(f"Error removing response: {e}")
             return False
     
     def list_responses(self, category: str = None) -> Dict:
@@ -240,9 +179,9 @@ class ConfigManager:
                 self.settings = self._create_default_settings()
                 self.save_settings()
                 
-            print(f"✅ Settings loaded")
+            print(f"Settings loaded")
         except Exception as e:
-            print(f"⚠️  Error loading settings: {e}")
+            print(f"Error loading settings: {e}")
             self.settings = self._create_default_settings()
     
     def save_settings(self):
@@ -251,7 +190,7 @@ class ConfigManager:
             with open("worm_settings.json", 'w') as f:
                 json.dump(self.settings, f, indent=2)
         except Exception as e:
-            print(f"❌ Error saving settings: {e}")
+            print(f"Error saving settings: {e}")
     
     def _create_default_settings(self) -> Dict:
         """Create default settings"""
@@ -307,10 +246,10 @@ class ConfigManager:
         try:
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(self.responses, f, indent=2, ensure_ascii=False)
-            print(f"✅ Responses exported to {filename}")
+            print(f"Responses exported to {filename}")
             return True
         except Exception as e:
-            print(f"❌ Export error: {e}")
+            print(f"Export error: {e}")
             return False
     
     def import_responses(self, filename: str) -> bool:
@@ -321,10 +260,10 @@ class ConfigManager:
             
             self.responses = imported_responses
             self.save_responses()
-            print(f"✅ Responses imported from {filename}")
+            print(f"Responses imported from {filename}")
             return True
         except Exception as e:
-            print(f"❌ Import error: {e}")
+            print(f"Import error: {e}")
             return False
     
     def get_stats(self) -> Dict:

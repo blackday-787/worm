@@ -1,0 +1,14 @@
+# WORM AI-Free Requirements
+# Hardware Control
+pyserial==3.5
+
+# Audio (Text-to-Speech only)
+pygame==2.5.2
+gTTS==2.4.0
+
+# Voice Recognition (optional)
+vosk==0.3.45
+sounddevice==0.4.6
+
+# System utilities
+python-dotenv==1.0.0 

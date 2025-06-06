@@ -1,0 +1,108 @@
+{
+  "startup_message": "hello whatsup?",
+  "responses": {
+    "hello_there_worm": {
+      "speech": "Hello there Tate!",
+      "movement": "choreographedTalk",
+      "mouth_movements": 1
+    },
+    "ask_me_a_question": {
+      "speech": "What would you like to know about being a worm?",
+      "movement": "t",
+      "mouth_movements": 2
+    },
+    "dance_for_me": {
+      "speech": "It's dance time and I'm ready to show my moves!",
+      "movement": "d",
+      "mouth_movements": 2
+    },
+    "boogie_for_me": {
+      "speech": "Time to boogie and wiggle!",
+      "movement": "d",
+      "mouth_movements": 1
+    },
+    "move_forward": {
+      "speech": "I'm wiggling forward with excitement!",
+      "movement": "fl",
+      "mouth_movements": 1
+    },
+    "turn_right": {
+      "speech": "Time to turn right and explore!",
+      "movement": "fr",
+      "mouth_movements": 2
+    },
+    "lean_back": {
+      "speech": "Watch me tilt back left with style!",
+      "movement": "bl",
+      "mouth_movements": 2
+    },
+    "reset_position": {
+      "speech": "Straightening up and getting back to my neutral position!",
+      "movement": "b",
+      "mouth_movements": 2
+    },
+    "open_mouth": {
+      "speech": "Opening my mouth wide!",
+      "movement": "om",
+      "mouth_movements": 1
+    },
+    "close_mouth": {
+      "speech": "Closing my mouth now!",
+      "movement": "cm",
+      "mouth_movements": 1
+    },
+    "hermaphrodite_fact": {
+      "speech": "I think worms are hermaphrodites",
+      "movement": "t",
+      "mouth_movements": 1
+    },
+    "trying_your_best": {
+      "speech": "you're really trying your best arent you",
+      "movement": "t",
+      "mouth_movements": 2
+    },
+    "really_wormin": {
+      "speech": "we are really wormin' now!",
+      "movement": "d",
+      "mouth_movements": 1
+    },
+    "nice_to_meet_you": {
+      "speech": "hello nice to meet you too!",
+      "movement": "bl",
+      "mouth_movements": 1
+    },
+    "what_is_your_favorite_kind_of_dirt?": {
+      "speech": "the kind of dirt that I find myself in",
+      "movement": "br",
+      "mouth_movements": 2
+    },
+    "do_you_have_something_to_say_to_dad?": {
+      "speech": "im so sorry that the mariners lost dad",
+      "movement": "sadness",
+      "mouth_movements": 2
+    },
+    "okay_i_should_get_home": {
+      "speech": "goodbye everyone",
+      "movement": "sadness",
+      "mouth_movements": 1
+    },
+    "talk_to_me": {
+      "speech": "about what human?",
+      "movement": "sadness",
+      "mouth_movements": 1
+    },
+    "goodmorning": {
+      "speech": "happy friday to you too, hopefully there will be lots of dirt to get dirty in today",
+      "movement": "br",
+      "mouth_movements": 2
+    }
+  },
+  "system_messages": {
+    "voice_mode_ready": "Voice mode ready!",
+    "typing_mode_now": "Typing mode now!",
+    "goodbye": "Goodbye friend!",
+    "command_failed": "Oops, something went wrong with that command!",
+    "ai_brain_needed": "I'd love to chat but I need my AI brain to work properly!",
+    "thinking_trouble": "I'm having trouble thinking right now, but I'm still wiggly!"
+  }
+}
